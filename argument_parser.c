@@ -3,6 +3,43 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#if defined(_WIN32) || defined(WIN32)
+    #include <windows.h>
+#endif
+
+enum COLORS {
+    COLOR_BLUE
+};
+
+static void print_stderr_in_color(const char* str, enum COLORS color)
+{
+    #if defined(_WIN32) || defined(WIN32)
+        static HANDLE  hConsole = NULL;
+        WORD windows_color_code;
+        switch(color)
+        {
+            case COLOR_BLUE:
+                windows_color_code = FOREGROUND_BLUE;
+                break;
+        }
+
+        if(hConsole == NULL)
+            hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+        SetConsoleTextAttribute(hConsole, windows_color_code);
+        fprintf(stderr, "%s", str);
+        SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+    #else
+        int linux_color_code;
+        switch(color)
+        {
+            case COLOR_BLUE:
+                linux_color_code = 34;
+                break;
+        }
+        fprintf(stderr, "\033[%dm%s\033[0m", linux_color_mode, str);
+    #endif
+}
+
 
 void print_usage(const char* argv0, const char* header, const char* footer, char* required_arguments[], struct _longopt* options)
 {
@@ -126,9 +163,9 @@ void print_usage(const char* argv0, const char* header, const char* footer, char
         }
         if (has_param)
         {
-            fputs("\033[34m", stderr);
-            fputs(options[i].help_param_name, stderr);
-            fputs("\033[0m", stderr);
+            HANDLE  hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+            SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE);
+            print_stderr_in_color(options[i].help_param_name, COLOR_BLUE);
         }
         if (param_is_opt)
         {
@@ -159,9 +196,7 @@ void print_usage(const char* argv0, const char* header, const char* footer, char
             }
             else
             {
-                fputs("\033[34m", stderr);
-                fputs(options[i].help_param_name, stderr);
-                fputs("\033[0m", stderr);
+                print_stderr_in_color(options[i].help_param_name, COLOR_BLUE);
             }
             save_char_from_line++;
         }
