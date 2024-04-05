@@ -36,7 +36,7 @@ static void print_stderr_in_color(const char* str, enum COLORS color)
                 linux_color_code = 34;
                 break;
         }
-        fprintf(stderr, "\033[%dm%s\033[0m", linux_color_mode, str);
+        fprintf(stderr, "\033[%dm%s\033[0m", linux_color_code, str);
     #endif
 }
 
@@ -163,8 +163,6 @@ void print_usage(const char* argv0, const char* header, const char* footer, char
         }
         if (has_param)
         {
-            HANDLE  hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-            SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE);
             print_stderr_in_color(options[i].help_param_name, COLOR_BLUE);
         }
         if (param_is_opt)
@@ -177,19 +175,8 @@ void print_usage(const char* argv0, const char* header, const char* footer, char
         {
             fputc(' ', stderr);
         }
-        int line_begin_help = max_length;
-        int save_char_from_line = 0;
         for (int j = 0; options[i].help_description[j] != '\0'; j++)
         {
-            if (line_begin_help + save_char_from_line >= 80)
-            {
-                fputc('\n', stderr);
-                for (int k = 0; k < max_length + 3; k++)
-                {
-                    fputc(' ', stderr);
-                }
-                save_char_from_line = 4;
-            }
             if (options[i].help_description[j] != '$')
             {
                 fputc(options[i].help_description[j], stderr);
@@ -198,7 +185,6 @@ void print_usage(const char* argv0, const char* header, const char* footer, char
             {
                 print_stderr_in_color(options[i].help_param_name, COLOR_BLUE);
             }
-            save_char_from_line++;
         }
         fputc('\n', stderr);
     }
@@ -524,14 +510,6 @@ REORGANIZE:
     }
 
     *argc = argument_non_option_count;
-
-#ifdef DEBUG
-    for (int i = 0; i < *argc; i++)
-    {
-        fprintf(stderr, "%s ", argv[i]);
-    }
-    fprintf(stderr, "\n");
-#endif
 
     return true;
 }

@@ -71,6 +71,12 @@ void setup_arguments(int* argc, char* argv[])
     fprintf(stderr, "Print input on stderr = (bool) %d\n", print_input_on_stderr);
     fprintf(stderr, "Trace command on stderr = (bool) %d\n", trace_comand_on_stderr);
     fprintf(stderr, "Display help = (bool) %d\n", display_help);
+    fprintf(stderr, "Remaining arguments: ");
+    for (int i = 0; i < *argc; i++)
+    {
+        fprintf(stderr, "%s ", argv[i]);
+    }
+    fprintf(stderr, "\n");
 #endif
 
     if (display_help)
