@@ -8,7 +8,9 @@
 #endif
 
 enum COLORS {
-    COLOR_BLUE
+    COLOR_BLUE,
+    COLOR_RED,
+    COLOR_GREEN
 };
 
 static void print_stderr_in_color(const char* str, enum COLORS color)
@@ -20,6 +22,12 @@ static void print_stderr_in_color(const char* str, enum COLORS color)
         {
             case COLOR_BLUE:
                 windows_color_code = FOREGROUND_BLUE;
+                break;
+            case COLOR_RED:
+                windows_color_code = FOREGROUND_RED;
+                break;
+            case COLOR_GREEN:
+                windows_color_code = FOREGROUND_GREEN;
                 break;
         }
 
@@ -35,6 +43,11 @@ static void print_stderr_in_color(const char* str, enum COLORS color)
             case COLOR_BLUE:
                 linux_color_code = 34;
                 break;
+            case COLOR_RED:
+                linux_color_code = 31;
+                break;
+            case COLOR_GREEN:
+                linux_color_code = 32;
         }
         fprintf(stderr, "\033[%dm%s\033[0m", linux_color_code, str);
     #endif
@@ -192,18 +205,6 @@ void print_usage(const char* argv0, const char* header, const char* footer, char
     fputc('\n', stderr);
 }
 
-void free_on_error(struct _longopt* options, int structure_length)
-{
-    // Free all arguments that were allocated on error
-    for (int i = 0; i < structure_length; i++)
-    {
-        if (options[i].require_argument != ARGUMENT_REQUIRE_LEVEL_NONE)
-        {
-            free(* ((char**) options[i].address));
-        }
-    }
-}
-
 int strcmp_until_delimiter(const char* str1, const char* str2, char delimiter, int* index_of_delimiter)
 {
     *index_of_delimiter = 0;
@@ -264,6 +265,10 @@ int assign_longopt(char** argument, struct _longopt* options, int structure_leng
             }
             *arg_provided_with_equal = true;
             int argument_length = strlen(&(*argument)[index_of_delimiter + 3]);
+            if (* ((char**) options[i].address) != NULL)
+            {
+                return -1;
+            }
             * ((char**) options[i].address) = malloc((argument_length + 1) * sizeof(char));
             char* dest_addr = * ((char**) options[i].address);
             strcpy(&dest_addr[options[i].allow_unset], &(*argument)[index_of_delimiter + 3]);
@@ -276,8 +281,10 @@ int assign_longopt(char** argument, struct _longopt* options, int structure_leng
 
 int assign_shortopt(char argument, struct _longopt* options, int structure_length, bool unset)
 {
+    // Search through all allowed arguments
     for (int i = 0; i < structure_length; i++)
     {
+        // Check if argument is what we want
         if (options[i].opt_name != '\0' && argument == options[i].opt_name)
         {
             if (unset && !options[i].allow_unset)
@@ -302,6 +309,7 @@ bool arg_parser(int* argc, char* argv[], struct _longopt* options)
     int structure_length = 0;
     while (options[structure_length].opt_name != '\0' || options[structure_length].longopt_name != NULL)
     {
+        // Can't dereference a NULL pointer
         if (options[structure_length].address == NULL)
         {
             return false;
@@ -315,24 +323,29 @@ bool arg_parser(int* argc, char* argv[], struct _longopt* options)
 
     for (int i = 1; i < *argc; i++)
     {
-        // Previous flag requires an argument, detect it
+        // Previous flag did not specify argument
         if (found_structure_index != -1 && !long_opt_was_provided_with_equal)
         {
+            // No argument required, good
             if (options[found_structure_index].require_argument == ARGUMENT_REQUIRE_LEVEL_NONE)
             {
                 found_structure_index = -1;
             }
+            // We need an argument
             else if (options[found_structure_index].require_argument == ARGUMENT_REQUIRE_LEVEL_REQUIRED)
             {
                 if (argv[i][0] == '-')
                 {
-                    free_on_error(options, structure_length);
                     return false;
                 }
                 int argument_length = strlen(argv[i]);
                 if (options[found_structure_index].allow_unset)
                 {
                     argument_length += 1;
+                }
+                if (* ((char**) options[found_structure_index].address) != NULL)
+                {
+                    return false;
                 }
                 * ((char**) options[found_structure_index].address) = malloc((argument_length + 1) * sizeof(char));
                 char* dest_addr = * ((char**) options[found_structure_index].address);
@@ -345,6 +358,7 @@ bool arg_parser(int* argc, char* argv[], struct _longopt* options)
                 found_structure_index = -1;
                 continue;
             }
+            // Try to search for an argument
             else
             {
                 if (argv[i][0] != '-')
@@ -353,6 +367,10 @@ bool arg_parser(int* argc, char* argv[], struct _longopt* options)
                     if (options[found_structure_index].allow_unset)
                     {
                         argument_length += 1;
+                    }
+                    if (* ((char**) options[found_structure_index].address) != NULL)
+                    {
+                        return false;
                     }
                     * ((char**) options[found_structure_index].address) = malloc((argument_length + 1) * sizeof(char));
                     char* dest_addr = * ((char**) options[found_structure_index].address);
@@ -379,14 +397,16 @@ bool arg_parser(int* argc, char* argv[], struct _longopt* options)
         }
 
         long_opt_was_provided_with_equal = false;
+        found_structure_index = -1;
 
-        // Check if argument begins with a dash
+        // Check if argument begins with a dash or a plus
         if (argv[i][0] != '-' && argv[i][0] != '+')
         {
             argument_non_option_count += 1;
             continue;
         }
 
+        // If argument begins with a plus, unset shortopt
         if (argv[i][0] == '+')
         {
             last_opt_was_unset = true;
@@ -401,6 +421,10 @@ bool arg_parser(int* argc, char* argv[], struct _longopt* options)
                     {
                         argument_length += 1;
                     }
+                    if (* ((char**) options[found_structure_index].address) != NULL)
+                    {
+                        return false;
+                    }
                     * ((char**) options[found_structure_index].address) = malloc((argument_length + 1) * sizeof(char));
                     char* dest_addr = * ((char**) options[found_structure_index].address);
                     strcpy(&dest_addr[options[found_structure_index].allow_unset], &argv[i][c]);
@@ -413,7 +437,6 @@ bool arg_parser(int* argc, char* argv[], struct _longopt* options)
                 }
                 if ((found_structure_index = assign_shortopt(argv[i][c], options, structure_length, true)) == -1)
                 {
-                    free_on_error(options, structure_length);
                     return false;
                 }
                 option_should_have_argument = (options[found_structure_index].require_argument == ARGUMENT_REQUIRE_LEVEL_REQUIRED);
@@ -425,8 +448,10 @@ bool arg_parser(int* argc, char* argv[], struct _longopt* options)
 
         last_opt_was_unset = false;
 
+        // Double dash, long opt
         if (argv[i][1] == '-')
         {
+            // Only double dash, end of parsing arguments
             if (argv[i][2] == '\0')
             {
                 argument_non_option_count += *argc - i - 1;
@@ -435,15 +460,16 @@ bool arg_parser(int* argc, char* argv[], struct _longopt* options)
             }
             if ((found_structure_index = assign_longopt(&argv[i], options, structure_length, &long_opt_was_provided_with_equal)) == -1)
             {
-                free_on_error(options, structure_length);
                 return false;
             }
         }
+        // Single dash, ignore (will be used as stdin)
         else if (argv[i][1] == '\0')
         {
             argument_non_option_count += 1;
             continue;
         }
+        // Short opt
         else
         {
             int c = 1;
@@ -457,6 +483,10 @@ bool arg_parser(int* argc, char* argv[], struct _longopt* options)
                     {
                         argument_length += 1;
                     }
+                    if (* ((char**) options[found_structure_index].address) != NULL)
+                    {
+                        return false;
+                    }
                     * ((char**) options[found_structure_index].address) = malloc((argument_length + 1) * sizeof(char));
                     char* dest_addr = * ((char**) options[found_structure_index].address);
                     strcpy(&dest_addr[options[found_structure_index].allow_unset], &argv[i][c]);
@@ -469,7 +499,6 @@ bool arg_parser(int* argc, char* argv[], struct _longopt* options)
                 }
                 if ((found_structure_index = assign_shortopt(argv[i][c], options, structure_length, false)) == -1)
                 {
-                    free_on_error(options, structure_length);
                     return false;
                 }
                 option_should_have_argument = (options[found_structure_index].require_argument == ARGUMENT_REQUIRE_LEVEL_REQUIRED);
@@ -483,6 +512,10 @@ REORGANIZE:
 
     if (found_structure_index != -1 && options[found_structure_index].require_argument == ARGUMENT_REQUIRE_LEVEL_OPTIONAL && !long_opt_was_provided_with_equal)
     {
+        if (* ((char**) options[found_structure_index].address) != NULL)
+        {
+            return false;
+        }
         * ((char**) options[found_structure_index].address) = malloc((1 + options[found_structure_index].allow_unset) * sizeof(char));
         (* ((char**) options[found_structure_index].address))[options[found_structure_index].allow_unset] = '\0';
         if (options[found_structure_index].allow_unset)
@@ -493,7 +526,6 @@ REORGANIZE:
 
     if (found_structure_index != -1 && options[found_structure_index].require_argument == ARGUMENT_REQUIRE_LEVEL_REQUIRED && !long_opt_was_provided_with_equal)
     {
-        free_on_error(options, structure_length);
         return false;
     }
 
@@ -512,4 +544,64 @@ REORGANIZE:
     *argc = argument_non_option_count;
 
     return true;
+}
+
+void print_summary(int* argc, char* argv[], struct _longopt* options)
+{
+    int structure_length = 0;
+    while (options[structure_length].opt_name != '\0' || options[structure_length].longopt_name != NULL)
+    {
+        structure_length++;
+    }
+    for (int i = 0; i < structure_length; i++)
+    {
+        if (options[i].require_argument == ARGUMENT_REQUIRE_LEVEL_NONE)
+        {
+            if (options[i].longopt_name)
+            {
+                fprintf(stderr, "%-35s = (bool) ", options[i].longopt_name);
+            }
+            else
+            {
+                fprintf(stderr, "%-35c = (bool) ", options[i].opt_name);
+            }
+            bool value;
+            if ((value = (* (bool*) options[i].address)))
+            {
+                print_stderr_in_color("True", COLOR_GREEN);
+            }
+            else
+            {
+                print_stderr_in_color("False", COLOR_RED);
+            }
+            fputc('\n', stderr);
+        }
+        else
+        {
+            if (options[i].longopt_name)
+            {
+                fprintf(stderr, "%-35s = (string) ", options[i].longopt_name);
+            }
+            else
+            {
+                fprintf(stderr, "%-35c = (string) ", options[i].opt_name);
+            }
+            char* value;
+            if ((value = * (char**) options[i].address))
+            {
+                print_stderr_in_color(value, COLOR_BLUE);
+            }
+            else
+            {
+                fprintf(stderr, "%s", value);
+            }
+            fputc('\n', stderr);
+        }
+    }
+    fputs("Remaining arguments: ", stderr);
+    for (int i = 0; i < *argc; i++)
+    {
+        fprintf(stderr, "%s ", argv[i]);
+    }
+    fputc('\n', stderr);
 }

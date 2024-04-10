@@ -22,5 +22,6 @@ typedef struct _longopt {
 
 bool arg_parser(int* argc, char* argv[], struct _longopt* options);
 void print_usage(const char* argv0, const char* header, const char* footer, char* required_arguments[], struct _longopt* options);
+void print_summary(int* argc, char* argv[], struct _longopt* options);
 
 #endif

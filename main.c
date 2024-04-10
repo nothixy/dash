@@ -38,8 +38,8 @@ void setup_arguments(int* argc, char* argv[])
         {&(error_on_undefined_expansion), NULL, 'u', ARGUMENT_REQUIRE_LEVEL_NONE, true, NULL, "Fail when expanding an unset parameter"},
         {&(print_input_on_stderr), NULL, 'v', ARGUMENT_REQUIRE_LEVEL_NONE, true, NULL, "Write shell input to stderr"},
         {&(trace_comand_on_stderr), NULL, 'x', ARGUMENT_REQUIRE_LEVEL_NONE, true, NULL, "Print every command after expansion before execution"},
-        {&(display_help), "help", '\0', ARGUMENT_REQUIRE_LEVEL_NONE, false, NULL, "Show this help message"},
-        {&(display_help), "usage", '\0', ARGUMENT_REQUIRE_LEVEL_NONE, false, NULL, "Show this help message"},
+        {&(display_help), "help", 0, ARGUMENT_REQUIRE_LEVEL_NONE, false, NULL, "Show this help message"},
+        {&(display_help), "usage", 0, ARGUMENT_REQUIRE_LEVEL_NONE, false, NULL, "Show this help message"},
         {.longopt_name = 0, .opt_name = 0}
     };
 
@@ -55,41 +55,21 @@ void setup_arguments(int* argc, char* argv[])
         goto print_usage;
     }
 
-#ifdef DEBUG
-    fprintf(stderr, "Interactive = (bool) %d\n", interactive);
-    fprintf(stderr, "Command string = (string) %s\n", command_string);
-    fprintf(stderr, "Read from standard input = (bool) %d\n", read_from_standard_input);
-    fprintf(stderr, "Always export variables = (bool) %d\n", always_export_variables);
-    fprintf(stderr, "Notify background processes = (bool) %d\n", notify_background_processes);
-    fprintf(stderr, "No overwrite files redirection = (bool) %d\n", no_overwrite_files_redirection);
-    fprintf(stderr, "Exit on error = (bool) %d\n", exit_on_error);
-    fprintf(stderr, "No pathname expansion = (bool) %d\n", no_pathname_expansion);
-    fprintf(stderr, "Use function history = (bool) %d\n", use_function_history);
-    fprintf(stderr, "Report exit status = (bool) %d\n", report_exit_status);
-    fprintf(stderr, "Print options = (string) %s\n", print_options);
-    fprintf(stderr, "Error on undefined expansion = (bool) %d\n", error_on_undefined_expansion);
-    fprintf(stderr, "Print input on stderr = (bool) %d\n", print_input_on_stderr);
-    fprintf(stderr, "Trace command on stderr = (bool) %d\n", trace_comand_on_stderr);
-    fprintf(stderr, "Display help = (bool) %d\n", display_help);
-    fprintf(stderr, "Remaining arguments: ");
-    for (int i = 0; i < *argc; i++)
-    {
-        fprintf(stderr, "%s ", argv[i]);
-    }
-    fprintf(stderr, "\n");
-#endif
-
     if (display_help)
     {
         goto print_usage;
     }
 
+    #ifdef DEBUG
+    print_summary(argc, argv, options);
+    #endif
+
     goto end;
 
 print_usage:
-    print_usage(argv[0], "hixy's ysh, version 0.0.1", "Home page : https://hixy.tk/ysh", required_arguments, options);
+    print_usage(argv[0], "example shell, version 0.0.1", "Home page : https://example.com/shell", required_arguments, options);
 end:
-    free(print_options);
+    // free(print_options);
     free(command_string);
     exit(error_code);
 }
