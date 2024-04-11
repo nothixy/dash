@@ -65,9 +65,7 @@ void setup_arguments(int* argc, char* argv[])
         goto print_usage;
     }
 
-    #ifdef DEBUG
     print_summary(argc, argv, options);
-    #endif
 
     goto end;
 
