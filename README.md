@@ -10,7 +10,9 @@ and not
 ```c
 char argument[50];
 ```
+This structure will hold values of every flag.
 
+---
 Create a 0-terminated array of Longopt options, one for each flag you want. A Longopt structure is defined as follows:
 ```c
 typedef struct _longopt {
@@ -34,6 +36,7 @@ Longopt options[] = {
 };
 ```
 
+---
 Then for every mandatory argument, create a new NULL-terminated string array, for example:
 ```c
 char* required_arguments[] = {
@@ -42,7 +45,8 @@ char* required_arguments[] = {
 };
 ```
 
-Then you can call arg_parser():
+---
+Finally you can call arg_parser():
 ```c
 if (!arg_parser(argc, argv, options))
 {
