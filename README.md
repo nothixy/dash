@@ -2,7 +2,7 @@
 
 ## How to use it
 
-Create a structure containing strings and booleans: make sure that you don't allocate your strings from the heap by doing
+Create a structure containing strings and booleans: make sure that you don't allocate your strings from the stack by doing
 ```c
 char* argument = NULL;
 ```
@@ -15,16 +15,16 @@ Create a 0-terminated array of Longopt options, one for each flag you want. A Lo
 ```c
 typedef struct _longopt {
     void* address_of_flag_value;
-    char* flag_name_long;
-    char flag_name_short;
-    enum ARGUMENT_REQUIRE_LEVEL argument_level;
+    char* longopt_name;
+    char opt_name;
+    enum ARGUMENT_REQUIRE_LEVEL argument_require_level;
     bool allow_flag_unset;
-    char* argument_name_in_help;
-    char* flag_description_in_help;
+    char* help_param_name;
+    char* help_description;
 } Longopt;
 ```
 where `ARGUMENT_REQUIRE_LEVEL` can be `ARGUMENT_REQUIRE_LEVEL_NONE`, `ARGUMENT_REQUIRE_LEVEL_OPTIONAL`, or `ARGUMENT_REQUIRE_LEVEL_REQUIRED`.
-Furthermore, in flag_description_in_help, every `$` character will be replaced with `argument_name_in_help`
+Furthermore, in help_description, every `$` character will be replaced with `help_param_name`
 
 For example you could do:
 ```c
@@ -54,10 +54,10 @@ if (!arg_parser(argc, argv, options))
 ## What is supported
 
 A complete example is available in `main.c`, in this example, you can call
-`./main -i -c /bin/zsh v1 -s v2` for example, you should get this output:
+`./main -i --command="echo hi" v1 -s v2 -f +o "autocd noglob"` for example, you should get this output:
 ```
 interactive                         = (bool) True
-command                             = (string) /bin/zsh
+command                             = (string) echo hi
 stdin                               = (bool) True
 a                                   = (bool) False
 b                                   = (bool) False
@@ -66,7 +66,7 @@ e                                   = (bool) False
 f                                   = (bool) True
 h                                   = (bool) False
 m                                   = (bool) False
-o                                   = (string) +autocd salut
+o                                   = (string) +autocd noglob
 u                                   = (bool) False
 v                                   = (bool) False
 x                                   = (bool) False

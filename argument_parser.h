@@ -11,11 +11,11 @@ enum ARGUMENT_REQUIRE_LEVEL {
 };
 
 typedef struct _longopt {
-    void* address;
+    void* address_of_flag_value;
     const char* longopt_name;
     char opt_name;
-    enum ARGUMENT_REQUIRE_LEVEL require_argument;
-    bool allow_unset;
+    enum ARGUMENT_REQUIRE_LEVEL argument_require_level;
+    bool allow_flag_unset;
     const char* help_param_name;
     const char* help_description;
 } Longopt;
