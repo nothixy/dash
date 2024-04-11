@@ -1,19 +1,24 @@
 # C argument parsing library
 
 ## How to use it
+<ol>
+<li>Create a structure containing strings and booleans: make sure that you don't allocate your strings from the stack by doing
 
-Create a structure containing strings and booleans: make sure that you don't allocate your strings from the stack by doing
 ```c
 char* argument = NULL;
 ```
+
 and not
+
 ```c
 char argument[50];
 ```
-This structure will hold values of every flag.
 
----
-Create a 0-terminated array of Longopt options, one for each flag you want. A Longopt structure is defined as follows:
+This structure will hold values of every flag.
+</li>
+
+<li>Create a 0-terminated array of Longopt options, one for each flag you want. A Longopt structure is defined as follows:
+
 ```c
 typedef struct _longopt {
     void* address_of_flag_value;
@@ -29,6 +34,7 @@ where `ARGUMENT_REQUIRE_LEVEL` can be `ARGUMENT_REQUIRE_LEVEL_NONE`, `ARGUMENT_R
 Furthermore, in help_description, every `$` character will be replaced with `help_param_name`
 
 For example you could do:
+
 ```c
 Longopt options[] = {
     {&argument, "my_flag", 'f', ARGUMENT_REQUIRE_LEVEL_OPTIONAL, false, "flag_argument", "Set value of my flag to $"},
@@ -36,8 +42,10 @@ Longopt options[] = {
 };
 ```
 
----
-Then for every mandatory argument, create a new NULL-terminated string array, for example:
+</li>
+
+<li>Then for every mandatory argument, create a new NULL-terminated string array, for example:
+
 ```c
 char* required_arguments[] = {
     "output_stream",
@@ -45,8 +53,10 @@ char* required_arguments[] = {
 };
 ```
 
----
-Finally you can call arg_parser():
+</li>
+
+<li>Finally you can call arg_parser():
+
 ```c
 if (!arg_parser(argc, argv, options))
 {
@@ -54,6 +64,9 @@ if (!arg_parser(argc, argv, options))
     exit(1);
 }
 ```
+
+</li>
+</ol>
 
 ## What is supported
 
