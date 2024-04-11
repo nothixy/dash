@@ -1,11 +1,12 @@
-#include "argument_parser.h"
-#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
 #if defined(_WIN32) || defined(WIN32)
     #include <windows.h>
 #endif
+
+#include "argument_parser.h"
 
 enum COLORS {
     COLOR_BLUE,
