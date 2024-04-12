@@ -70,6 +70,13 @@ if (!arg_parser(argc, argv, options))
 
 ## What is supported
 
+- Short / long flags with or without an argument
+- Long flags with an argument provided with the '=' sign (e.g. `--output=file`)
+- Unsetting short flags with a plus sign instead of a hyphen (e.g. `+s` means explicitly disable flag `s`)
+- Multiple short options with a single hyphen (e.g. `-abc` means `-a -b -c`)
+- Short option and argument without a space between for options requiring arguments (e.g. `-cecho` means `-c echo`)
+- Double hyphen marks the end of flags, any argument beginning with an hyphen after that will not be considered as a flag
+
 A complete example is available in `main.c`, in this example, you can call
 `./main -i --command="echo hi" v1 -s v2 -f +o "autocd noglob"` for example, you should get this output:
 ```
