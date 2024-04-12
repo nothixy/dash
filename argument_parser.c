@@ -206,7 +206,7 @@ void print_usage(const char* argv0, const char* header, const char* footer, char
     fputc('\n', stderr);
 }
 
-int strcmp_until_delimiter(const char* str1, const char* str2, char delimiter, int* index_of_delimiter)
+static int strcmp_until_delimiter(const char* str1, const char* str2, char delimiter, int* index_of_delimiter)
 {
     *index_of_delimiter = 0;
     while (*str1 != '\0')
@@ -234,7 +234,7 @@ int strcmp_until_delimiter(const char* str1, const char* str2, char delimiter, i
     return 0;
 }
 
-int assign_longopt(char** argument, struct _longopt* options, int structure_length, bool* arg_provided_with_equal)
+static int assign_longopt(char** argument, struct _longopt* options, int structure_length, bool* arg_provided_with_equal)
 {
     // Search through all allowed arguments
     for (int i = 0; i < structure_length; i++)
@@ -280,7 +280,7 @@ int assign_longopt(char** argument, struct _longopt* options, int structure_leng
     return -1;
 }
 
-int assign_shortopt(char argument, struct _longopt* options, int structure_length, bool unset)
+static int assign_shortopt(char argument, struct _longopt* options, int structure_length, bool unset)
 {
     // Search through all allowed arguments
     for (int i = 0; i < structure_length; i++)
