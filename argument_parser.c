@@ -54,7 +54,7 @@ static void print_stderr_in_color(const char* str, enum COLORS color)
     #endif
 }
 
-static int calculate_print_spacing(struct _longopt* options)
+static int calculate_print_spacing(const struct _longopt* options)
 {
     // Calculate the number of spaces to align descriptions
     int max_length = 0;
@@ -100,7 +100,7 @@ static int calculate_print_spacing(struct _longopt* options)
     return max_length;
 }
 
-void print_usage(const char* argv0, const char* header, const char* footer, char* required_arguments[], struct _longopt* options)
+void print_usage(const char* argv0, const char* header, const char* footer, char* required_arguments[], const struct _longopt* options)
 {
     // Print header
     fputs(header, stderr);
@@ -241,7 +241,7 @@ static int strcmp_until_delimiter(const char* str1, const char* str2, char delim
     return 0;
 }
 
-static int assign_longopt(char** argument, struct _longopt* options, int structure_length, bool* arg_provided_with_equal)
+static int assign_longopt(char** argument, const struct _longopt* options, int structure_length, bool* arg_provided_with_equal)
 {
     // Search through all allowed arguments
     for (int i = 0; i < structure_length; i++)
@@ -287,7 +287,7 @@ static int assign_longopt(char** argument, struct _longopt* options, int structu
     return -1;
 }
 
-static int assign_shortopt(char argument, struct _longopt* options, int structure_length, bool unset)
+static int assign_shortopt(char argument, const struct _longopt* options, int structure_length, bool unset)
 {
     // Search through all allowed arguments
     for (int i = 0; i < structure_length; i++)
@@ -554,7 +554,7 @@ REORGANIZE:
     return true;
 }
 
-void print_summary(int* argc, char* argv[], struct _longopt* options)
+void print_summary(const int* argc, char* argv[], const struct _longopt* options)
 {
     int structure_length = 0;
     while (options[structure_length].opt_name != '\0' || options[structure_length].longopt_name != NULL)
