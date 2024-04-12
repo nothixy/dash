@@ -54,23 +54,8 @@ static void print_stderr_in_color(const char* str, enum COLORS color)
     #endif
 }
 
-
-void print_usage(const char* argv0, const char* header, const char* footer, char* required_arguments[], struct _longopt* options)
+static int calculate_print_spacing(struct _longopt* options)
 {
-    // Print header
-    fputs(header, stderr);
-    fputc('\n', stderr);
-    fprintf(stderr, "Usage: %s [options]", argv0);
-    if (required_arguments != NULL)
-    {
-        for (int i = 0; required_arguments[i] != NULL; i++)
-        {
-            fputc(' ', stderr);
-            fputs(required_arguments[i], stderr);
-        }
-    }
-    fputc('\n', stderr);
-
     // Calculate the number of spaces to align descriptions
     int max_length = 0;
     for (int i = 0; options[i].opt_name != '\0' || options[i].longopt_name != NULL; i++)
@@ -112,7 +97,29 @@ void print_usage(const char* argv0, const char* header, const char* footer, char
             max_length = length;
         }
     }
+    return max_length;
+}
 
+void print_usage(const char* argv0, const char* header, const char* footer, char* required_arguments[], struct _longopt* options)
+{
+    // Print header
+    fputs(header, stderr);
+    fputc('\n', stderr);
+    fprintf(stderr, "Usage: %s [options]", argv0);
+    if (required_arguments != NULL)
+    {
+        for (int i = 0; required_arguments[i] != NULL; i++)
+        {
+            fputc(' ', stderr);
+            fputs(required_arguments[i], stderr);
+        }
+    }
+    fputc('\n', stderr);
+
+    // Calculate spacing
+    int max_length = calculate_print_spacing(options);
+
+    // Start printing
     for (int i = 0; options[i].opt_name != '\0' || options[i].longopt_name != NULL; i++)
     {
         fputs("  ", stderr);
