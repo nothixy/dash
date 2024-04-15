@@ -601,7 +601,7 @@ void print_summary(const int* argc, char* argv[], const struct _longopt* options
             }
             else
             {
-                fprintf(stderr, "%s", value);
+                fputs("(null)", stderr);
             }
             fputc('\n', stderr);
         }
