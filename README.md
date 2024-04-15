@@ -78,8 +78,8 @@ if (!arg_parser(argc, argv, options))
 - Double hyphen marks the end of flags, any argument beginning with an hyphen after that will not be considered as a flag
 - A single hyphen will not be consider as a flag, meaning you can use it freely (for example to replace /dev/stdin)
 
-A complete example is available in `main.c`, in this example, you can call
-`./main -i --command="echo hi" v1 -s v2 -f +o "autocd noglob"` for example, you should get this output:
+A complete example is available in `example.c`, you can build it with `make example`, in this example, you can call
+`./build/example -i --command="echo hi" v1 -s v2 -f +o "autocd noglob"` for example, you should get this output:
 ```
 interactive                         = (bool) True
 command                             = (string) echo hi
@@ -97,13 +97,13 @@ v                                   = (bool) False
 x                                   = (bool) False
 help                                = (bool) False
 usage                               = (bool) False
-Remaining arguments: ./main v1 v2 
+Remaining arguments: ./build/example v1 v2
 ```
 Other example:
-`./main --help`
+`./build/example --help`
 ```
 example shell, version 0.0.1
-Usage: ./main [options] output_file
+Usage: ./build/example [options] output_file
   -i, --interactive       Start an interactive shell
   -c, --command line      Execute line as a command
   -s, --stdin             Read commands from standard input
