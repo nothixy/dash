@@ -1,5 +1,7 @@
 .PHONY: clean makebuilddir install
 
+CC ?= cc
+
 all: makebuilddir build/libargument_parser.so
 
 clean:
@@ -9,7 +11,7 @@ makebuilddir:
 	mkdir -p build/
 
 build/libargument_parser.so: argument_parser.c argument_parser.h
-	gcc -fPIC -shared -o $@ $<
+	${CC} -Wall -Wextra -fPIC -shared -o $@ $<
 
 example: makebuilddir
-	gcc -o build/example example.c argument_parser.c
+	${CC} -Wall -Wextra -o build/example example.c argument_parser.c

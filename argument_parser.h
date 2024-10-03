@@ -10,7 +10,7 @@ enum ARGUMENT_REQUIRE_LEVEL {
     ARGUMENT_REQUIRE_LEVEL_REQUIRED
 };
 
-typedef struct _longopt {
+typedef struct longopt {
     void* address_of_flag_value;
     const char* longopt_name;
     char opt_name;
@@ -20,8 +20,8 @@ typedef struct _longopt {
     const char* help_description;
 } Longopt;
 
-bool arg_parser(int* argc, char* argv[], struct _longopt* options);
-void print_usage(const char* argv0, const char* header, const char* footer, char* required_arguments[], const struct _longopt* options);
-void print_summary(const int* argc, char* argv[], const struct _longopt* options);
+bool arg_parser(int* argc, char* argv[], struct longopt* options);
+void print_usage(const char* argv0, const char* header, const char* footer, char* required_arguments[], const struct longopt* options);
+void print_summary(const int* argc, char* argv[], const struct longopt* options);
 
 #endif
