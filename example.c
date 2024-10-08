@@ -23,10 +23,19 @@ typedef struct {
 } Arguments;
 
 
+static void print_help(const char* program_name, const dash_Longopt* options, FILE* output_file)
+{
+    const char* required_arguments[] = {
+        "output_file",
+        NULL
+    };
+    dash_print_usage(program_name, "example shell, version 0.0.1", "Home page : https://example.com/shell", required_arguments, options, output_file);
+}
+
 
 int main(int argc, char* argv[])
 {
-    int error_code = 0;
+    int error_code = 1;
 
     Arguments args = {0};
 
@@ -50,29 +59,23 @@ int main(int argc, char* argv[])
         {0}
     };
 
-    const char* required_arguments[] = {
-        "output_file",
-        NULL
-    };
-
     if (!dash_arg_parser(&argc, argv, options))
     {
-        fputs("Invalid arguments\n", stdout);
-        error_code = 1;
-        goto PRINT_USAGE;
+        fputs("Invalid arguments\n", stderr);
+        print_help(argv[0], options, stderr);
+        goto END;
     }
 
     if (args.display_help)
     {
-        goto PRINT_USAGE;
+        print_help(argv[0], options, stdout);
+    }
+    else
+    {
+        dash_print_summary(argc, argv, options, stdout);
     }
 
-    dash_print_summary(argc, argv, options);
-
-    goto END;
-
-PRINT_USAGE:
-    dash_print_usage(argv[0], "example shell, version 0.0.1", "Home page : https://example.com/shell", required_arguments, options);
+    error_code = 0;
 END:
     free(args.print_options);
     free(args.command_string);

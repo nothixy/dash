@@ -14,7 +14,7 @@ enum COLORS {
     COLOR_GREEN
 };
 
-static void print_stderr_in_color(const char* str, enum COLORS color)
+static void print_in_color(FILE* output, const char* str, enum COLORS color)
 {
     #if defined(_WIN32) || defined(WIN32)
         static HANDLE  hConsole = NULL;
@@ -38,7 +38,7 @@ static void print_stderr_in_color(const char* str, enum COLORS color)
         if(hConsole == NULL)
             hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
         SetConsoleTextAttribute(hConsole, windows_color_code);
-        fprintf(stderr, "%s", str);
+        fprintf(output, "%s", str);
         SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
     #else
         int linux_color_code;
@@ -57,7 +57,7 @@ static void print_stderr_in_color(const char* str, enum COLORS color)
                 linux_color_code = 0;
                 break;
         }
-        fprintf(stderr, "\033[%dm%s\033[0m", linux_color_code, str);
+        fprintf(output, "\033[%dm%s\033[0m", linux_color_code, str);
     #endif
 }
 
@@ -107,22 +107,28 @@ static size_t calculate_print_spacing(const dash_Longopt* options)
     return max_length;
 }
 
-void dash_print_usage(const char* argv0, const char* header, const char* footer, const char* required_arguments[], const dash_Longopt* options)
+void dash_print_usage(const char* argv0, const char* header, const char* footer, const char* required_arguments[], const dash_Longopt* options, FILE* output_file)
 {
     size_t max_length;
+
+    if(output_file == NULL)
+    {
+        output_file = output_file;
+    }
+
     // Print header
-    fputs(header, stderr);
-    fputc('\n', stderr);
-    fprintf(stderr, "Usage: %s [options]", argv0);
+    fputs(header, output_file);
+    fputc('\n', output_file);
+    fprintf(output_file, "Usage: %s [options]", argv0);
     if (required_arguments != NULL)
     {
         for (int i = 0; required_arguments[i] != NULL; i++)
         {
-            fputc(' ', stderr);
-            fputs(required_arguments[i], stderr);
+            fputc(' ', output_file);
+            fputs(required_arguments[i], output_file);
         }
     }
-    fputc('\n', stderr);
+    fputc('\n', output_file);
 
     // Calculate spacing
     max_length = calculate_print_spacing(options);
@@ -139,7 +145,7 @@ void dash_print_usage(const char* argv0, const char* header, const char* footer,
         size_t length = 0;
         size_t diff;
 
-        fputs("  ", stderr);
+        fputs("  ", output_file);
 
         if (options[i].opt_name != '\0' && options[i].longopt_name != NULL)
         {
@@ -174,38 +180,38 @@ void dash_print_usage(const char* argv0, const char* header, const char* footer,
         length += 4;
         if (has_short)
         {
-            fprintf(stderr, "-%c", options[i].opt_name);
+            fprintf(output_file, "-%c", options[i].opt_name);
             if (has_unsetopt)
             {
-                fprintf(stderr, "/+%c", options[i].opt_name);
+                fprintf(output_file, "/+%c", options[i].opt_name);
             }
         }
         if (has_comma)
         {
-            fputs(", ", stderr);
+            fputs(", ", output_file);
         }
         if (has_long)
         {
-            fprintf(stderr, "--%s", options[i].longopt_name);
+            fprintf(output_file, "--%s", options[i].longopt_name);
         }
-        fputs(" ", stderr);
+        fputs(" ", output_file);
         if (param_is_opt)
         {
-            fputc('[', stderr);
+            fputc('[', output_file);
         }
         if (has_param)
         {
-            print_stderr_in_color(options[i].param_name, COLOR_BLUE);
+            print_in_color(output_file, options[i].param_name, COLOR_BLUE);
         }
         if (param_is_opt)
         {
-            fputc(']', stderr);
+            fputc(']', output_file);
         }
-        fputs("  ", stderr);
+        fputs("  ", output_file);
         diff = max_length - length;
         for (size_t j = 0; j < diff; j++)
         {
-            fputc(' ', stderr);
+            fputc(' ', output_file);
         }
         if(options[i].description != NULL)
         {
@@ -213,18 +219,80 @@ void dash_print_usage(const char* argv0, const char* header, const char* footer,
             {
                 if (options[i].description[j] != '$')
                 {
-                    fputc(options[i].description[j], stderr);
+                    fputc(options[i].description[j], output_file);
                 }
                 else
                 {
-                    print_stderr_in_color(options[i].param_name, COLOR_BLUE);
+                    print_in_color(output_file, options[i].param_name, COLOR_BLUE);
                 }
             }
         }
-        fputc('\n', stderr);
+        fputc('\n', output_file);
     }
-    fputs(footer, stderr);
-    fputc('\n', stderr);
+    fputs(footer, output_file);
+    fputc('\n', output_file);
+}
+
+
+void dash_print_summary(int argc, char** argv, const dash_Longopt* options, FILE* output_file)
+{
+    char* value;
+
+    int structure_length = 0;
+
+    while (options[structure_length].opt_name != '\0' || options[structure_length].longopt_name != NULL)
+    {
+        structure_length++;
+    }
+    for (int i = 0; i < structure_length; i++)
+    {
+        if (options[i].param_name == NULL)
+        {
+            if (options[i].longopt_name)
+            {
+                fprintf(output_file, "%-35s = (bool) ", options[i].longopt_name);
+            }
+            else
+            {
+                fprintf(output_file, "%-35c = (bool) ", options[i].opt_name);
+            }
+            if ((* (bool*) options[i].user_pointer))
+            {
+                print_in_color(output_file, "True", COLOR_GREEN);
+            }
+            else
+            {
+                print_in_color(output_file, "False", COLOR_RED);
+            }
+            fputc('\n', output_file);
+        }
+        else
+        {
+            if (options[i].longopt_name)
+            {
+                fprintf(output_file, "%-35s = (string) ", options[i].longopt_name);
+            }
+            else
+            {
+                fprintf(output_file, "%-35c = (string) ", options[i].opt_name);
+            }
+            if ((value = * (char**) options[i].user_pointer))
+            {
+                print_in_color(output_file, value, COLOR_BLUE);
+            }
+            else
+            {
+                fputs("(null)", output_file);
+            }
+            fputc('\n', output_file);
+        }
+    }
+    fputs("Remaining arguments: ", output_file);
+    for (int i = 0; i < argc; i++)
+    {
+        fprintf(output_file, "%s ", argv[i]);
+    }
+    fputc('\n', output_file);
 }
 
 static int strcmp_until_delimiter(const char* str1, const char* str2, char delimiter, int* index_of_delimiter)
@@ -577,65 +645,4 @@ REORGANIZE:
     *argc = argument_non_option_count;
 
     return true;
-}
-
-void dash_print_summary(int argc, char** argv, const dash_Longopt* options)
-{
-    char* value;
-
-    int structure_length = 0;
-
-    while (options[structure_length].opt_name != '\0' || options[structure_length].longopt_name != NULL)
-    {
-        structure_length++;
-    }
-    for (int i = 0; i < structure_length; i++)
-    {
-        if (options[i].param_name == NULL)
-        {
-            if (options[i].longopt_name)
-            {
-                fprintf(stderr, "%-35s = (bool) ", options[i].longopt_name);
-            }
-            else
-            {
-                fprintf(stderr, "%-35c = (bool) ", options[i].opt_name);
-            }
-            if ((* (bool*) options[i].user_pointer))
-            {
-                print_stderr_in_color("True", COLOR_GREEN);
-            }
-            else
-            {
-                print_stderr_in_color("False", COLOR_RED);
-            }
-            fputc('\n', stderr);
-        }
-        else
-        {
-            if (options[i].longopt_name)
-            {
-                fprintf(stderr, "%-35s = (string) ", options[i].longopt_name);
-            }
-            else
-            {
-                fprintf(stderr, "%-35c = (string) ", options[i].opt_name);
-            }
-            if ((value = * (char**) options[i].user_pointer))
-            {
-                print_stderr_in_color(value, COLOR_BLUE);
-            }
-            else
-            {
-                fputs("(null)", stderr);
-            }
-            fputc('\n', stderr);
-        }
-    }
-    fputs("Remaining arguments: ", stderr);
-    for (int i = 0; i < argc; i++)
-    {
-        fprintf(stderr, "%s ", argv[i]);
-    }
-    fputc('\n', stderr);
 }
