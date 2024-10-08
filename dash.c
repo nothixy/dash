@@ -113,7 +113,7 @@ void dash_print_usage(const char* argv0, const char* header, const char* footer,
 
     if(output_file == NULL)
     {
-        output_file = output_file;
+        output_file = stderr;
     }
 
     // Print header
@@ -360,11 +360,15 @@ static int assign_longopt(char** argument, const dash_Longopt* options, int stru
             }
             *arg_provided_with_equal = true;
             argument_length = strlen(&(*argument)[index_of_delimiter + 3]);
-            if (* ((char**) options[i].user_pointer) != NULL)
+            if (*((char**) options[i].user_pointer) != NULL)
             {
                 return -1;
             }
-            * ((char**) options[i].user_pointer) = malloc((argument_length + 1) * sizeof(char));
+            *((char**) options[i].user_pointer) = malloc((argument_length + 1) * sizeof(char));
+            if(*((char**) options[i].user_pointer) == NULL)
+            {
+                return -1;
+            }
             dest_addr = * ((char**) options[i].user_pointer);
             strcpy(&dest_addr[options[i].allow_flag_unset], &(*argument)[index_of_delimiter + 3]);
             *argument = NULL;
@@ -449,7 +453,11 @@ bool dash_arg_parser(int* argc, char* argv[], dash_Longopt* options)
                 {
                     return false;
                 }
-                * ((char**) options[found_structure_index].user_pointer) = malloc((argument_length + 1) * sizeof(char));
+                *((char**) options[found_structure_index].user_pointer) = malloc((argument_length + 1) * sizeof(char));
+                if(*((char**) options[found_structure_index].user_pointer) == NULL)
+                {
+                    return false;
+                }
                 dest_addr = * ((char**) options[found_structure_index].user_pointer);
                 strcpy(&dest_addr[options[found_structure_index].allow_flag_unset], argv[i]);
                 if (options[found_structure_index].allow_flag_unset)
@@ -474,7 +482,11 @@ bool dash_arg_parser(int* argc, char* argv[], dash_Longopt* options)
                     {
                         return false;
                     }
-                    * ((char**) options[found_structure_index].user_pointer) = malloc((argument_length + 1) * sizeof(char));
+                    *((char**) options[found_structure_index].user_pointer) = malloc((argument_length + 1) * sizeof(char));
+                    if(*((char**) options[found_structure_index].user_pointer) == NULL)
+                    {
+                        return false;
+                    }
                     dest_addr = * ((char**) options[found_structure_index].user_pointer);
                     strcpy(&dest_addr[options[found_structure_index].allow_flag_unset], argv[i]);
                     if (options[found_structure_index].allow_flag_unset)
@@ -487,7 +499,11 @@ bool dash_arg_parser(int* argc, char* argv[], dash_Longopt* options)
                 }
                 else
                 {
-                    * ((char**) options[found_structure_index].user_pointer) = malloc((1 + options[found_structure_index].allow_flag_unset) * sizeof(char));
+                    *((char**) options[found_structure_index].user_pointer) = malloc((1 + options[found_structure_index].allow_flag_unset) * sizeof(char));
+                    if(*((char**) options[found_structure_index].user_pointer) == NULL)
+                    {
+                        return false;
+                    }
                     (* ((char**) options[found_structure_index].user_pointer))[options[found_structure_index].allow_flag_unset] = '\0';
                     if (options[found_structure_index].allow_flag_unset)
                     {
@@ -527,6 +543,10 @@ bool dash_arg_parser(int* argc, char* argv[], dash_Longopt* options)
                         return false;
                     }
                     * ((char**) options[found_structure_index].user_pointer) = malloc((argument_length + 1) * sizeof(char));
+                    if(*((char**) options[found_structure_index].user_pointer) == NULL)
+                    {
+                        return false;
+                    }
                     unset_dest_addr = * ((char**) options[found_structure_index].user_pointer);
                     strcpy(&unset_dest_addr[options[found_structure_index].allow_flag_unset], &argv[i][c]);
                     if (options[found_structure_index].allow_flag_unset)
@@ -617,7 +637,11 @@ REORGANIZE:
         {
             return false;
         }
-        * ((char**) options[found_structure_index].user_pointer) = malloc((1 + options[found_structure_index].allow_flag_unset) * sizeof(char));
+        *((char**) options[found_structure_index].user_pointer) = malloc((1 + options[found_structure_index].allow_flag_unset) * sizeof(char));
+        if(*((char**) options[found_structure_index].user_pointer) == NULL)
+        {
+            return false;
+        }
         (* ((char**) options[found_structure_index].user_pointer))[options[found_structure_index].allow_flag_unset] = '\0';
         if (options[found_structure_index].allow_flag_unset)
         {
