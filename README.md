@@ -17,37 +17,47 @@ char argument[50];
 This structure will hold values of every flag.
 </li>
 
-<li>Create a 0-terminated array of Longopt options, one for each flag you want. A Longopt structure is defined as follows:
+<li>Create a 0-terminated array of dash_Longopt options, one for each flag you want. A dash_Longopt structure is defined as follows:
 
 ```c
-typedef struct _longopt {
-    void* address_of_flag_value;
-    char* longopt_name;
+typedef struct {
     char opt_name;
-    enum ARGUMENT_REQUIRE_LEVEL argument_require_level;
     bool allow_flag_unset;
-    char* help_param_name;
-    char* help_description;
-} Longopt;
+    bool param_optional;
+    const char* param_name;
+    const char* longopt_name;
+    const char* description;
+    void* user_pointer;
+} dash_Longopt;
 ```
-where `ARGUMENT_REQUIRE_LEVEL` can be `ARGUMENT_REQUIRE_LEVEL_NONE`, `ARGUMENT_REQUIRE_LEVEL_OPTIONAL`, or `ARGUMENT_REQUIRE_LEVEL_REQUIRED`.
-Furthermore, in help_description, every `$` character will be replaced with `help_param_name`
+- `opt_name`: A single char defining the short name of the option. If not set, the option has no short name.
+- `allow_flag_unset` Indicates if it's possible to write +X instead of -X to remove the X flag. If not set, +X is forbidden.
+- `param_optional` Indicates whether or not the parameter of the option can be omitted. This statement as no effect if `param_name` is unset. If not set, the parameter isn't optional.
+- `param_name`: The name of the parameter. If not set, the option takes no parameter and `user_pointer` should be a `bool*` that points to a boolean. If set, `user_pointer` should be a `char*` that must **absolutely** be NULL at the beginning.
+- `longopt_name`: the long name of the option, callable with --NAME. If not set, the option has no short name.
+- `description`: the description of the option for dash_print_usage, every `$` character will be replaced by the content of `param_name`
+- `user_pointer`: A pointer to the data to register, either a `bool*` or a `char*`, MUST be set
 
-For example you could do:
-
+Example:
 ```c
-Longopt options[] = {
-    {&argument, "my_flag", 'f', ARGUMENT_REQUIRE_LEVEL_OPTIONAL, false, "flag_argument", "Set value of my flag to $"},
+char* argument = NULL;
+bool flag;
+
+dash_Longopt options[] = {
+    {.user_pointer = &argument, .longopt_name = "my_flag", .opt_name = 'f', .param_optional = True, .param_name = "flag_argument", .description = "Set value of my flag to $"},
     {0}
 };
 ```
+
+> [!NOTE]  
+> Every entry with no `opt_name` and no `longopt_name` will be considered like the 0-element at the end of the array.
 
 </li>
 
 <li>Then for every mandatory argument, create a new NULL-terminated string array, for example:
 
 ```c
-char* required_arguments[] = {
+const char* required_arguments[] = {
     "output_stream",
     NULL
 };
@@ -58,9 +68,9 @@ char* required_arguments[] = {
 <li>Finally you can call arg_parser():
 
 ```c
-if (!arg_parser(argc, argv, options))
+if (!dash_arg_parser(&argc, argv, options))
 {
-    print_usage(argv[0], "help message header", "help message footer", required_argumnets, options);
+    dash_print_usage(argv[0], "help message header", "help message footer", required_argumnets, options);
     exit(1);
 }
 ```
@@ -127,4 +137,4 @@ Home page : https://example.com/shell
 ## Current limitations
 
 - This library can only handle boolean flags and flags with string values, it could be improved to handle integers for example.
-- You can't set a flag several times (this also applies to +/-)
+- You can't set a non-boolean flag several times

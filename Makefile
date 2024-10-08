@@ -2,7 +2,7 @@
 
 CC ?= cc
 
-all: makebuilddir build/libargument_parser.so
+all: makebuilddir build/libdash.so
 
 clean:
 	rm -rf build/
@@ -10,8 +10,8 @@ clean:
 makebuilddir:
 	mkdir -p build/
 
-build/libargument_parser.so: argument_parser.c argument_parser.h
+build/libdash.so: dash.c dash.h
 	${CC} -Wall -Wextra -fPIC -shared -o $@ $<
 
 example: makebuilddir
-	${CC} -Wall -Wextra -o build/example example.c argument_parser.c
+	${CC} -Wall -Wextra -o build/example example.c dash.c
