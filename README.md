@@ -2,7 +2,7 @@
 
 ## How to use it
 <ol>
-<li>Create a structure containing strings and booleans: make sure that you don't allocate your strings from the stack by doing
+<li>Create a structure containing strings pointing to NULL and booleans: make sure that you don't allocate your strings on the stack by doing
 
 ```c
 char* argument = NULL;
@@ -49,7 +49,7 @@ dash_Longopt options[] = {
 };
 ```
 
-> [!NOTE]  
+> [!NOTE]
 > Every entry with no `opt_name` and no `longopt_name` will be considered like the 0-element at the end of the array.
 
 </li>
@@ -84,9 +84,9 @@ if (!dash_arg_parser(&argc, argv, options))
 - Long flags with an argument provided with the '=' sign (e.g. `--output=file`)
 - Unsetting short flags with a plus sign instead of a hyphen (e.g. `+s` means explicitly disable flag `s`)
 - Multiple short options with a single hyphen (e.g. `-abc` means `-a -b -c`)
-- Short option and argument without a space between for options requiring arguments (e.g. `-cecho` means `-c echo`)
+- Short option and argument without a space in between for options requiring arguments (e.g. `-cecho` means `-c echo`)
 - Double hyphen marks the end of flags, any argument beginning with an hyphen after that will not be considered as a flag
-- A single hyphen will not be consider as a flag, meaning you can use it freely (for example to replace /dev/stdin)
+- A single hyphen will not be considered as a flag, meaning you can use it freely (for example as an alias to /dev/stdin)
 
 A complete example is available in `example.c`, you can build it with `make example`, in this example, you can call
 `./build/example -i --command="echo hi" v1 -s v2 -f +o "autocd noglob"` for example, you should get this output:
