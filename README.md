@@ -2,7 +2,7 @@
 
 ## How to use it
 <ol>
-<li>Create a structure containing strings pointing to NULL and booleans: make sure that you don't allocate your strings on the stack by doing
+<li>Create a structure containing strings and booleans: make sure that you don't allocate your strings on the stack by doing
 
 ```c
 char* argument = NULL;
@@ -33,7 +33,7 @@ typedef struct {
 - `opt_name`: A single char defining the short name of the option. If not set, the option has no short name.
 - `allow_flag_unset` Indicates if it's possible to write +X instead of -X to remove the X flag. If not set, +X is forbidden.
 - `param_optional` Indicates whether or not the parameter of the option can be omitted. This statement as no effect if `param_name` is unset. If not set, the parameter isn't optional.
-- `param_name`: The name of the parameter. If not set, the option takes no parameter and `user_pointer` should be a `bool*` that points to a boolean. If set, `user_pointer` should be a `char*` that must **absolutely** be NULL at the beginning.
+- `param_name`: The name of the parameter. If not set, the option takes no parameter and `user_pointer` should be a `bool*` that points to a boolean. If set, `user_pointer` should be a `char*`.
 - `longopt_name`: the long name of the option, callable with --NAME. If not set, the option has no short name.
 - `description`: the description of the option for dash_print_usage, every `$` character will be replaced by the content of `param_name`
 - `user_pointer`: A pointer to the data to register, either a `bool*` or a `char*`, MUST be set

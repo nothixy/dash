@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 {
     int error_code = 1;
 
-    Arguments args = {0};
+    Arguments args;
 
     dash_Longopt options[] = {
         {.user_pointer = &(args.interactive), .longopt_name = "interactive", .opt_name = 'i', .description = "Start an interactive shell"},
