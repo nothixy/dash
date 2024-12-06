@@ -71,8 +71,13 @@ const char* required_arguments[] = {
 if (!dash_arg_parser(&argc, argv, options))
 {
     dash_print_usage(argv[0], "help message header", "help message footer", required_argumnets, options);
+    dash_free(options);
     exit(1);
 }
+
+// use argument, flag and argv
+
+dash_free(options);
 ```
 
 </li>

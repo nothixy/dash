@@ -77,8 +77,7 @@ int main(int argc, char* argv[])
 
     error_code = 0;
 END:
-    free(args.print_options);
-    free(args.command_string);
-    
+    dash_free(options);
+
     return error_code;
 }
